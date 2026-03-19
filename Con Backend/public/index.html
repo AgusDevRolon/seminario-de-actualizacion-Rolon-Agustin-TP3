@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Alumnos</title>
+</head>
+<body>
+
+  <h1>Registro de alumnos</h1>
+
+  <form id="form">
+    <input type="text" id="nombre" placeholder="Nombre" required>
+    <input type="number" id="edad" placeholder="Edad" required>
+    <input type="number" step="0.1" id="nota" placeholder="Nota" required>
+    <button type="submit">Agregar</button>
+  </form>
+
+  <h2>Lista de alumnos</h2>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Edad</th>
+        <th>Nota</th>
+      </tr>
+    </thead>
+    <tbody id="tabla"></tbody>
+  </table>
+
+<script>
+// ID único por usuario (se guarda en el navegador)
+let userId = localStorage.getItem("userId");
+
+if (!userId) {
+  userId = Date.now();
+  localStorage.setItem("userId", userId);
+}
+
+let alumnos = [];
+
+// cargar alumnos desde el backend
+async function cargar() {
+  const res = await fetch(`http://localhost:3000/alumnos/${userId}`);
+  alumnos = await res.json();
+  mostrar();
+}
+
+// ordenar por nota y nombre
+function ordenar() {
+  alumnos.sort((a, b) => {
+    if (b.nota !== a.nota) return b.nota - a.nota;
+    return a.nombre.localeCompare(b.nombre);
+  });
+}
+
+// mostrar en tabla
+function mostrar() {
+  ordenar();
+
+  const tabla = document.getElementById("tabla");
+  tabla.innerHTML = "";
+
+  alumnos.forEach(a => {
+    tabla.innerHTML += `
+      <tr>
+        <td>${a.nombre}</td>
+        <td>${a.edad}</td>
+        <td>${a.nota}</td>
+      </tr>
+    `;
+  });
+}
+
+// enviar alumno al backend
+document.getElementById("form").addEventListener("submit", async function(e){
+  e.preventDefault();
+
+  const alumno = {
+    nombre: nombre.value,
+    edad: parseInt(edad.value),
+    nota: parseFloat(nota.value)
+  };
+
+  await fetch(`http://localhost:3000/alumnos/${userId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(alumno)
+  });
+
+  alumnos.push(alumno);
+  mostrar();
+  this.reset();
+});
+
+// cargar al abrir la página
+cargar();
+
+</script>
+
+</body>
+</html>

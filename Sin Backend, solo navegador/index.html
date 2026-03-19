@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Alumnos</title>
+</head>
+<body>
+
+  <h1>Registro de alumnos</h1>
+
+  <form id="form">
+    <input type="text" id="nombre" placeholder="Nombre" required>
+    <input type="number" id="edad" placeholder="Edad" required>
+    <input type="number" step="0.1" id="nota" placeholder="Nota" required>
+    <button type="submit">Agregar</button>
+  </form>
+
+  <h2>Lista de alumnos</h2>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Edad</th>
+        <th>Nota</th>
+      </tr>
+    </thead>
+    <tbody id="tabla"></tbody>
+  </table>
+
+<script>
+let alumnos = JSON.parse(localStorage.getItem("alumnos")) || [];
+
+function guardar() {
+  localStorage.setItem("alumnos", JSON.stringify(alumnos));
+}
+
+function ordenar() {
+  alumnos.sort((a, b) => {
+    if (b.nota !== a.nota) {
+      return b.nota - a.nota; // mayor a menor
+    }
+    return a.nombre.localeCompare(b.nombre); // nombre A-Z
+  });
+}
+
+function mostrar() {
+  ordenar();
+
+  const tabla = document.getElementById("tabla");
+  tabla.innerHTML = "";
+
+  alumnos.forEach(alumno => {
+    tabla.innerHTML += `
+      <tr>
+        <td>${alumno.nombre}</td>
+        <td>${alumno.edad}</td>
+        <td>${alumno.nota}</td>
+      </tr>
+    `;
+  });
+}
+
+document.getElementById("form").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const nombre = document.getElementById("nombre").value;
+  const edad = parseInt(document.getElementById("edad").value);
+  const nota = parseFloat(document.getElementById("nota").value);
+
+  alumnos.push({ nombre, edad, nota });
+
+  guardar();
+  mostrar();
+
+  this.reset();
+});
+
+// cargar al iniciar
+mostrar();
+</script>
+
+</body>
+</html>
